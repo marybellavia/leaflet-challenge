@@ -7,8 +7,8 @@ d3.json(queryUrl, function (data) {
   createFeatures(data.features);
 });
 
+// function that gets all the info I will want on my map
 function createFeatures(earthquakeData) {
-
   // creating a function to get the style for markers
   function getStyle(earthquakeData, layer) {
 
@@ -67,6 +67,7 @@ function createFeatures(earthquakeData) {
   createMap(earthquakes);
 }
 
+// function that creates my map, markers, and legend
 function createMap(earthquakeMarkers) {
   // defining lightmap layer
   var lightmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
