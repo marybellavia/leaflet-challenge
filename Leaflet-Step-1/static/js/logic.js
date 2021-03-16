@@ -1,17 +1,21 @@
+// api queryurl
 var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
 
-// Perform a GET request to the query URL
+// GET request to the query URL
 d3.json(queryUrl, function (data) {
-  // Once we get a response, send the data.features object to the createFeatures function
+  // send the data.features object to the createFeatures function
   createFeatures(data.features);
 });
 
 function createFeatures(earthquakeData) {
+
   // creating a function to get the style for markers
   function getStyle(earthquakeData, layer) {
+
     // function to dynamically change the size of the marker
-    function markerSize(mag) {return mag * 4;}
-    //conditional to get the correct color
+    function markerSize(mag) { return mag * 4; }
+
+    //conditional to get the correct color for marker
     var color;
     if (earthquakeData.geometry.coordinates[2] <= 10) {
       color = "#69B34C";
@@ -31,6 +35,7 @@ function createFeatures(earthquakeData) {
     else if (earthquakeData.geometry.coordinates[2] > 90) {
       color = "#FF0D0D";
     }
+
     // returning a dictionary
     return {
       stroke: false,
@@ -41,25 +46,25 @@ function createFeatures(earthquakeData) {
       fillColor: color,
       radius: markerSize(earthquakeData.properties.mag)
     };
-}
-// defining a function that will bind a popup describing the place and time of the earthquake for each marker
-function onEachFeature(feature, layer) {
-  layer.bindPopup("<h3>" + feature.properties.place +
-    "</h3><hr><p>" + new Date(feature.properties.time) + "</p>");
-}
-
-// creating a GeoJSON layer containing the features array on the earthquakeData object
-// Run the onEachFeature function once for each piece of data in the array
-var earthquakes = L.geoJSON(earthquakeData, {
-  onEachFeature: onEachFeature,
-  style: getStyle,
-  pointToLayer: function(feature, latlng) {
-    return L.circleMarker(latlng);
   }
-});
+  // defining a function that will bind a popup describing the place and time of the earthquake for each marker
+  function onEachFeature(feature, layer) {
+    layer.bindPopup("<h3>" + feature.properties.place +
+      "</h3><hr><p>" + new Date(feature.properties.time) + "</p>");
+  }
 
-// sending our earthquakes layer to the createMap function
-createMap(earthquakes);
+  // creating a GeoJSON layer containing the features array on the earthquakeData object
+  // running the onEachFeature function once for each piece of data in the array
+  var earthquakes = L.geoJSON(earthquakeData, {
+    onEachFeature: onEachFeature,
+    style: getStyle,
+    pointToLayer: function (feature, latlng) {
+      return L.circleMarker(latlng);
+    }
+  });
+
+  // sending our earthquakes layer to the createMap function
+  createMap(earthquakes);
 }
 
 function createMap(earthquakeMarkers) {
@@ -76,12 +81,12 @@ function createMap(earthquakeMarkers) {
     "Light Map": lightmap
   };
 
-  // Create overlay object to hold our overlay layer
+  // overlay object to hold our overlay layer
   var overlayMaps = {
     Earthquakes: earthquakeMarkers
   };
 
-  // Create our map, giving it the streetmap and earthquakes layers to display on load
+  // creating map, giving it the lightmap and earthquakes layers to display on load
   var myMap = L.map("mapid", {
     center: [
       37.09, -95.71
@@ -90,10 +95,32 @@ function createMap(earthquakeMarkers) {
     layers: [lightmap, earthquakeMarkers]
   });
 
-  // Create a layer control
-  // Pass in our baseMaps and overlayMaps
-  // Add the layer control to the map
+  // creating a layer control, pass in our baseMaps and overlayMaps & adding the layer control to the map
   L.control.layers(baseMaps, overlayMaps, {
     collapsed: false
   }).addTo(myMap);
-}
+
+  // adding the legend
+  var legend = L.control({ position: 'bottomright' });
+
+  // legend details
+  legend.onAdd = function () {
+    let div = L.DomUtil.create("div", "legend");
+    const magnitudes = [-10, 10, 30, 50, 70, 90];
+    const colors = ["#69B34C", "#ACB733", "#FAB733", "#FF8E15", "#FF4E11", "#FF0D0D"];
+    
+    // title for legend
+    div.innerHTML += '<p>Earthquake Magnitude</p>';
+    
+    // looping through our intervals to generate a label with a colored square for each interval.
+    for (var i = 0; i < magnitudes.length; i++) {
+      console.log(colors[i]);
+      div.innerHTML +=
+        "<i style='background: " + colors[i] + "'></i> " +
+        magnitudes[i] + (magnitudes[i + 1] ? "&ndash;" + magnitudes[i + 1] + "<br>" : "+");
+    }
+    return div;
+  };
+  // adding legend to the map.
+  legend.addTo(myMap);
+};
