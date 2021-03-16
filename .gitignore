@@ -129,4 +129,4 @@ dmypy.json
 .pyre/
 
 # hiding API key
-*.config.js
+config.js
